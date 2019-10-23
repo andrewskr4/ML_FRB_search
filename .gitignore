@@ -1,2 +1,3 @@
 *.o
-gen_training_set*
+gen_training_set
+gen_samples
