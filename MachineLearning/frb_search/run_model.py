@@ -3,6 +3,7 @@ import torchvision
 import torchvision.transforms as transforms
 import sys
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+import matplotlib.gridspec as gridspec
 
 from dataclasses import dataclass
 from torch.utils.data import Dataset, DataLoader
@@ -164,19 +165,30 @@ def plot_sample(filename,figname):
     width = int(x[3])
     x = x[7:] 
     x = x.reshape(256,256)
-     
-    fig, ax = plt.subplots(1,1)
-    ax.grid(False)
-    ax.set_xticks([0,64,128,192,256])
-    ax.set_yticks([0,64,128,192,256])
-    plt.xlabel('Frequency (MHz)')
-    plt.ylabel('time(ms)')
-    # ... and label them with the respective list entries
-    ax.set_yticklabels([800,700,600,500,400])
-    ax.set_xticklabels([0,str(64*width),str(128*width),256*width])
+    #fig, ax = plt.subplots(2,1,figsize=(10, 12),sharex=True)
+    fig = plt.figure(figsize = (8,10))
+    gs1 = gridspec.GridSpec(5, 4)
+    gs1.update(wspace=0.0, hspace=0.0)
+    ax1 = plt.subplot(gs1[0:-1,0:])
+    ax2 = plt.subplot(gs1[-1,0:])
 
-    im = ax.imshow(x)
-    plt.title(str('MJD: ')+str(int(mjd))+str('   location= ')+str(seconds)+str('s    width=')+str(width),fontsize=8)
+    ax1.grid(False)
+    ax1.set_xticks([0,63,127,191,255])
+    ax1.set_yticks([0,63,127,191,255])
+    ax2.set_xticks([0,63,127,191,255])
+    ax2.set_yticks([0,63,127,191,255])
+    ax1.set_ylabel('Frequency (MHz)')
+    ax2.set_xlabel('time(ms)')
+    # ... and label them with the respective list entries
+    ax1.set_yticklabels([800,700,600,500,400])
+    ax1.set_xticklabels([" "," "," "," "," "])
+    ax2.set_xticklabels([0,str(64*width),str(128*width),192*width,255*width])
+    ax2.set_xlim(-2,258)
+    im = ax1.imshow(x)
+    
+    prof = np.sum(x,axis=0)
+    ax2.plot(prof)
+    ax1.set_title(str('MJD: ')+str(int(mjd))+str('   location= ')+str(seconds)+str('s    width=')+str(width),fontsize=8)
     plt.savefig(figname,bbox_inches='tight', transparent=True,pad_inches=0)
     plt.close(fig)
 
@@ -192,7 +204,7 @@ testloader = DataLoader(testset, batch_size=200,shuffle=False, num_workers=2)
 
 model = Net()
 #model.load_state_dict(torch.load('/data5/models/best_model.pth'))
-model.load_state_dict(torch.load('/data5/models/best_model.pth',map_location='cuda:0'))
+model.load_state_dict(torch.load('/data/repeaters/models/best_model.pth',map_location='cuda:0'))
 model.to(device)
 
 model.eval()

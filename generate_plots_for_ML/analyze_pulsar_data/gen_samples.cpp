@@ -1,5 +1,5 @@
-//***************************************************************************
-//                             FIL2SPEC.c                                  
+//**************************************************************************
+// gen_samples.cpp                                   
 //
 // The following program takes the filterbank format file and  
 // gives out the spec file which later can be plotted by foldDynamic 
