@@ -1,3 +1,5 @@
 *.o
 gen_training_set
 gen_samples
+gen_samples_FRB
+

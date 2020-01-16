@@ -29,7 +29,7 @@ class singlePulseSet(Dataset):
     start: int 
     def __getitem__(self, idx):
         value=self.start+idx
-        filename = str('/data/repeaters/training_data/train_data_')+str(value)+str('.dat')
+        filename = str('/data/repeaters/training_data/train_data1_')+str(value)+str('.dat')
         x = np.fromfile(filename, dtype='float32')
         y = int(x[6])
         x = x[7:]
@@ -184,7 +184,7 @@ def run(train_batch_size, val_batch_size,
     objects_to_checkpoint = {"model": model, "optimizer": optimizer}
     engine_checkpoint = ModelCheckpoint(
         dirname="/data/repeaters/models/",
-        filename_prefix='fifth',
+        filename_prefix='sixth',
         require_empty=False,
         save_interval=10000)
     trainer.add_event_handler(

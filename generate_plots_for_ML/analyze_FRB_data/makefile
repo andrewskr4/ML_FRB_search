@@ -3,7 +3,7 @@ CPP=g++ -g -Wall
 CFLAGS=-lm 
 DEPS = sigproc.h filterbank.h header.h fold.h polyco.h epn.h version.h slamac.h slalib.h
 
-OBJ = rfimask.o read_header.o functions.o file_exists.o error_message.o strings_equal.o print_version.o \
+OBJ = gen_samples_FRB.o read_header.o functions.o file_exists.o error_message.o strings_equal.o print_version.o \
 	open_file.o help.o nsamples.o open_log.o fold_data.o \
 	write_profiles.o update_log.o read_polyco.o nrselect.o norm_prof.o \
 	read_block.o fold_header.o send_stuff.o swap_bytes.o aliases.o mjd.o \
@@ -16,7 +16,7 @@ OBJ = rfimask.o read_header.o functions.o file_exists.o error_message.o strings_
 %.o: %.cpp $(DEPS)
 	$(CPP) -c -o $@ $< $(CFLAGS) -std=c++11
 
-gen_samples: $(OBJ)
+gen_samples_FRB: $(OBJ)
 	g++ -Wall -g -o $@ $^ $(CFLAGS) -std=c++11
 
 clean: 
