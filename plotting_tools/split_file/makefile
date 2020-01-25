@@ -1,5 +1,5 @@
 CC=gcc -g
-CFLAGS=-lm -lcpgplot
+CFLAGS=-lm
 DEPS = sigproc.h header.h fold.h polyco.h epn.h version.h slamac.h slalib.h
 
 OBJ = frb_analysis.o functions.o file_exists.o error_message.o strings_equal.o print_version.o \
@@ -7,7 +7,7 @@ OBJ = frb_analysis.o functions.o file_exists.o error_message.o strings_equal.o p
 	write_profiles.o update_log.o read_polyco.o nrselect.o norm_prof.o \
 	read_block.o fold_header.o send_stuff.o swap_bytes.o aliases.o mjd.o \
 	write_epn.o scale_prof.o vmin.o sizeof_file.o slalib.o pack_unpack.o \
-	vmax.o close_log.o colorIndex.o filterbank_header.o
+	vmax.o close_log.o filterbank_header.o
 
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
