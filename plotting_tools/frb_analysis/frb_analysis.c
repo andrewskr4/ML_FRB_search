@@ -16,7 +16,10 @@ float image_size_x = 4000.0;
 float image_size_y = 4000.0;
 float image_origin_x = 1000.0;
 float image_origin_y = 1500.0;
-
+float plot_dm = 0.0;
+double plot_tstart = 0.0;
+float plot_snr = 0.0;
+char* plot_filename;
 int save =0;
 
 int dedisperse_float(float *data, double f1, double f2, int nchans, int numSamples, double dm, double refrf, double tsamp);
@@ -125,13 +128,43 @@ int selection_on_plot(float *t_XREF, float *t_YREF, float *t_X, float *t_Y, floa
   return 0;
 }
  
+int normalize(float *plot, int nchans, int numSamples)
+{
+  float rms=0.0, mean=0.0, sum=0.0,sq_sum=0.0;
 
+  for(int i=0;i<nchans;i++)
+  {
+    sum=0.0;
+    sq_sum=0.0;
+    for(int j=0;j<numSamples;j++)
+    {
+      sum+=plot[numSamples*i+j];
+      sq_sum += plot[numSamples*i+j]*plot[numSamples*i+j];
+    }
+    mean = sum/numSamples;
+    rms = sq_sum/numSamples;
+    rms = rms - (mean*mean);
+    rms = sqrt(fabs(rms));
+
+    for(int j=0;j<numSamples;j++)
+    {
+      if(rms>0.0)
+      {	
+      plot[numSamples*i+j]-=mean;
+      plot[numSamples*i+j]/=rms;
+      }
+      else plot[nchans*j+i] = 0.0;
+    }
+  }
+  return 0;
+}
 
 int plotDynamicSpectra(float *data, float f1, float f2, int plot_b1, float ts, int numSamples, int nchans,float mean,float std, float th)
 {
-  
+  //normalize(data,nchans,numSamples);
+
   float tr[] = { image_origin_x-1.0*image_size_x/(float)(2*numSamples), (float)(image_size_x/(float)numSamples), 0, image_origin_y-1.0*image_size_y/(float)(2*nchans), 0, (float)(image_size_y/(float)nchans) };
-  if(save==1) cpgopen("dynamicSpectra.ps/CPS");
+  if(save==1) cpgopen(plot_filename);
   else cpgbeg(0,"/xs",1,1);
   cpgenv(0,window_size_x,0,window_size_y,0,-2);
   char palette[10];
@@ -139,7 +172,7 @@ int plotDynamicSpectra(float *data, float f1, float f2, int plot_b1, float ts, i
   colorIndex(palette);
   
   printf("Plotting the image \n");
-  cpgimag(data, numSamples, nchans, 1, numSamples, 1,nchans, mean-th*std,mean+th*std , tr);
+  cpggray(data, numSamples, nchans, 1, numSamples, 1,nchans, -1.0*th,1.0*th, tr);
   printf("Plotting \n");
 
   //nornamlized axis of profile and band
@@ -150,9 +183,9 @@ int plotDynamicSpectra(float *data, float f1, float f2, int plot_b1, float ts, i
   cpgaxis(" ", image_origin_x, image_origin_y, image_size_x+image_origin_x, image_origin_y, ts*plot_b1, ts*(numSamples+plot_b1), 0, 2, 0.5, 0.0, 0.25, 0.25, 0);
   cpgaxis(" ", image_origin_x, image_origin_y+image_size_y, image_origin_x+image_size_x, image_origin_y+image_size_y, ts*plot_b1, ts*(numSamples+plot_b1), 0, 2, 0.0, 0.5, 0.25, 0.5, 0);
   
-  cpgaxis("N", 0.0, image_origin_y, 0.0, image_size_y+image_origin_y, f1, f2, 0, 2, 0.0, 0.5, 0.25, -0.5, 0);
-  cpgaxis(" ", image_origin_x, image_origin_y, image_origin_x, image_size_y+image_origin_y, f1, f2, 0, 2, 0.0, 0.5, 0.25, -0.5, 0);
-  cpgaxis(" ", image_size_x+image_origin_x, image_origin_y, image_size_x+image_origin_x, image_size_y+image_origin_y, f1, f2, 0, 2, 0.5, 0.0, 0.25, 0.5, 0);
+  cpgaxis("N", 0.0, image_origin_y, 0.0, image_size_y+image_origin_y, f2, f1, 0, 2, 0.0, 0.5, 0.25, -0.5, 0);
+  cpgaxis(" ", image_origin_x, image_origin_y, image_origin_x, image_size_y+image_origin_y, f2, f1, 0, 2, 0.0, 0.5, 0.25, -0.5, 0);
+  cpgaxis(" ", image_size_x+image_origin_x, image_origin_y, image_size_x+image_origin_x, image_size_y+image_origin_y, f2, f1, 0, 2, 0.5, 0.0, 0.25, 0.5, 0);
   
   cpgaxis("N", image_origin_x, 0.0, image_origin_x, image_origin_y, -0.2, 1.2, 0.5, 2, 0.5, 0.25, 0.25, -0.5, 0);
   cpgaxis(" ", image_origin_x+image_size_x, 0.0, image_origin_x+image_size_x, image_origin_y, -0.2, 1.2, 0.5, 2, 0.5, 0.25, 0.25, -0.5, 0);
@@ -161,12 +194,13 @@ int plotDynamicSpectra(float *data, float f1, float f2, int plot_b1, float ts, i
   cpgaxis(" ", 0.0, image_origin_y+image_size_y, image_origin_x, image_origin_y+image_size_y, -0.2, 1.2, 0.5, 2, 0.5, 0.25, 0.0, 0.5, 0);
 
   float *prof = (float*) malloc(sizeof(float)*numSamples);
+  float *temp = (float*) malloc(sizeof(float)*numSamples);
   float *xval = (float*) malloc(sizeof(float)*numSamples);
   memset(prof,0,sizeof(float)*numSamples);
 
   int i,j;
   float sum=0,m,max=-1e10;
-   
+  float prof_std =0.0; 
   
   for(i=0;i<nchans; i++)
   {
@@ -178,14 +212,38 @@ int plotDynamicSpectra(float *data, float f1, float f2, int plot_b1, float ts, i
   
   for(j=0; j<numSamples; j++) prof[j] /= nchans;
   
-  m = cal_mean(prof,numSamples);
-  max = prof[0]-m;
-  for(j=0; j<numSamples; j++) 
+  memcpy(temp,prof,sizeof(float)*numSamples);
+  
+  max = -10000.0;
+  for(i=0;i<numSamples/100-1;i++)
+  {
+    m = median(100,&temp[i*100]);
+    for(j=i*100;j<(i+1)*100;j++)
+    {
+      prof[j] -= m;
+      if(max<prof[j]) max = prof[j];
+      //prof_std += prof[j]*prof[j];
+    }
+
+  }
+  
+  m = median(100+numSamples%100,&temp[(((int)numSamples/100-1)*100)]);
+  for(j=(((int)numSamples/100-1)*100);j<numSamples;j++)
   {
     prof[j] -= m;
     if(max<prof[j]) max = prof[j];
+    //prof_std += prof[j]*prof[j];
   }
   
+  m = cal_mean(prof,numSamples);
+  for(j=0;j<numSamples;j++)
+  {
+    prof_std += (prof[j]-m)*(prof[j]-m);
+  }
+  prof_std = sqrt(prof_std/numSamples);
+  float snr = max/prof_std;
+  printf("SNR: %f \n",snr);
+  if(plot_snr<snr) plot_snr = snr;
   for(j=0; j<numSamples; j++) 
   {
     xval[j] = image_origin_x+j*(image_size_x/(float)numSamples);
@@ -197,7 +255,7 @@ int plotDynamicSpectra(float *data, float f1, float f2, int plot_b1, float ts, i
 
   free(xval);
   free(prof);
-  
+  free(temp);
   float *band = (float*) malloc(sizeof(float)*nchans);
   float *yval = (float*) malloc(sizeof(float)*nchans);
   
@@ -240,6 +298,11 @@ int plotDynamicSpectra(float *data, float f1, float f2, int plot_b1, float ts, i
   //cpglab(" ", " ", "DYNAMIC SPECTRA");
   cpgmtxt("L",1.8,0.5,.5,"Frequency (MHz)");
   cpgmtxt("B",2.5,0.5,.5,"Time (s)");
+  cpgsch(1.0);
+  char *title = (char*) malloc(sizeof(char)*200);
+  sprintf(title,"DM: %4.3f SNR: %2.2f TOA: %5.10lf",plot_dm,plot_snr,plot_tstart);
+  cpgmtxt("T",0.5,0.5,.5,title);
+  free(title);
   //cpgend();
   return 0;
 }
@@ -274,9 +337,9 @@ int adjust_spectra(float *temp, float* data, char* weights, char *flags, float m
           }
         }
         if(w==0) w++;
-        temp[(i-plot_c1)*plot_numSamples+j-plot_b1] = sum/((float)(w));
+        temp[(plot_c2-plot_c1-i+plot_c1-1)*plot_numSamples+j-plot_b1] = sum/((float)(w));
       }
-      else temp[(i-plot_c1)*plot_numSamples+j-plot_b1] = mean;
+      else temp[(plot_c2-plot_c1-i+plot_c1-1)*plot_numSamples+j-plot_b1] = mean;
     }
   }
   
@@ -303,6 +366,50 @@ int adjust_spectra(float *temp, float* data, char* weights, char *flags, float m
 }
 
 
+int prepare_data(float *data, int nchans, int numSamples)
+{
+  float *temp, *t_data;
+  temp = (float*) malloc(sizeof(float)*512);
+  t_data = (float*) malloc(sizeof(float)*numSamples*nchans);
+  printf("nchans %d numSamples %d \n",nchans,numSamples);
+  for(int i=0;i<nchans;i++)
+  {
+    printf("channel %d \r",i);
+    fflush(stdout);
+    for(int j=0;j<(numSamples/256)-1;j++)
+    {
+      for(int k=j*256; k<j*256+512; k++)
+      {
+        temp[k-j*256] = data[k*nchans+i];
+      }
+      float m = median(512,temp);
+      for(int k=j*256+128; k<j*256+384; k++)
+      {
+        t_data[k*nchans+i] = data[k*nchans+i]-m;
+      }
+      
+      if(j==0)
+      {
+        for(int k=0; k<384; k++)
+        {
+          t_data[k*nchans+i] = data[k*nchans+i]-m;
+        }
+      }
+      if(j==(numSamples/256)-2)
+      {
+        for(int k=j*256+128; k<j*256+128+512; k++)
+        {
+          t_data[k*nchans+i] = data[k*nchans+i]-m;
+        }
+      }
+    }
+  }
+
+  memcpy(data,t_data,sizeof(float)*numSamples*nchans);
+  free(t_data);
+  free(temp);
+  return 0;
+}
 
 
 
@@ -320,6 +427,7 @@ int main(int argc, char* argv[])
   float* file_data_float;
   int *file_flags;
   
+  plot_filename = (char*) malloc(sizeof(char)*200);
   fpin = fopen(argv[1],"rb");
   if(fpin==NULL)
   {
@@ -327,6 +435,8 @@ int main(int argc, char* argv[])
     exit(0);
   }
   
+  sprintf(plot_filename,"%s.ps/CPS",argv[1]);
+
   flagfile = (char*) malloc(sizeof(char)*200);
   
   read_header(fpin);
@@ -447,6 +557,9 @@ int main(int argc, char* argv[])
       else weights[i*numSamples+j]=0;
     }
   }
+  
+  prepare_data(data,nchans,numSamples);
+  /*
   double sum=0.0,sqsum=0.0,total_sum=0.0, total_sqsum;
   float med=0;
   //float* temp_median = (float*) malloc(sizeof(float)*numSamples*nchans);
@@ -478,9 +591,9 @@ int main(int argc, char* argv[])
     }
   }
   //free(temp_median);
-    
-  float mean = total_sum/(total_w);
-  float std = sqrt(total_sqsum/(total_w));
+  */  
+  float mean = 0.0;
+  float std = 0.0;
   float th=3.0;
   printf("numSample %d nchans %d mean = %f, std= %0.10f \n",numSamples,nchans,mean,std);
   
@@ -488,7 +601,7 @@ int main(int argc, char* argv[])
   float XREF, YREF, X, Y, tX, tY;
   
   int c1,c2,b1,b2,plot_nchans,plot_numSamples,plot_c1,plot_c2,plot_b1,plot_b2;
-  float plot_dm=0.0;
+ 
   
   plot_nchans = nchans;
   plot_numSamples = numSamples;
@@ -500,6 +613,7 @@ int main(int argc, char* argv[])
   //dedisperse_float(data, f1, f2, nchans, numSamples, 1000 , 400.0, 1.0e-3);
   //dedisperse_float(data, f1, f2, nchans, numSamples, 207.4, 400.0, tsamp);
   memcpy(temp,data,sizeof(float)*numSamples*nchans);
+  adjust_spectra(temp, data, weights, flags, mean, plot_c1, plot_c2, plot_b1, plot_b2, plot_numSamples, numSamples, ncrunch, tcrunch);
   plotDynamicSpectra(temp, f1, f2, plot_b1, tsamp, plot_numSamples, plot_nchans,mean,std,th);
 
   while(character != 'x')
@@ -514,9 +628,11 @@ int main(int argc, char* argv[])
       
       b1 = (int)((XREF/image_size_x)*plot_numSamples);
       b2 = (int)((X/image_size_x)*plot_numSamples);
-      c1 = (int)((YREF/image_size_y)*plot_nchans);
-      c2 = (int)((Y/image_size_y)*plot_nchans);
+      c2 = (int)((YREF/image_size_y)*plot_nchans);
+      c1 = (int)((Y/image_size_y)*plot_nchans);
       
+      c2 = plot_nchans - c2;
+      c1 = plot_nchans - c1;
       plot_nchans = c2-c1;
       plot_numSamples = b2-b1;
       plot_c1 += c1;
@@ -529,8 +645,38 @@ int main(int argc, char* argv[])
 
       
     }
-
     
+    if(character == 'u')
+    {
+      printf("%d %d \n",plot_c2,plot_nchans);
+      if(plot_c2<nchans/ncrunch-4)
+      {
+        
+        plot_c1 += 4;
+        plot_c2 += 4;
+      }
+      
+      adjust_spectra(temp, data, weights, flags, mean, plot_c1, plot_c2, plot_b1, plot_b2, plot_numSamples, numSamples, ncrunch, tcrunch);
+      plotDynamicSpectra(temp, f1+ foff*plot_c1*ncrunch, f1+ foff*plot_c2*ncrunch, plot_b1, tsamp*tcrunch, plot_numSamples, plot_nchans,mean,std,th);
+
+
+    }
+
+    if(character == 'i')
+    {
+      printf("%d %d \n",plot_c2,plot_nchans);
+      if(plot_c1>4)
+      {
+
+        plot_c1 -= 4;
+        plot_c2 -= 4;
+      }
+
+      adjust_spectra(temp, data, weights, flags, mean, plot_c1, plot_c2, plot_b1, plot_b2, plot_numSamples, numSamples, ncrunch, tcrunch);
+      plotDynamicSpectra(temp, f1+ foff*plot_c1*ncrunch, f1+ foff*plot_c2*ncrunch, plot_b1, tsamp*tcrunch, plot_numSamples, plot_nchans,mean,std,th);
+
+
+    } 
 
     if(character == 'b')
     {
@@ -560,8 +706,11 @@ int main(int argc, char* argv[])
 
       b1 = (int)((XREF/image_size_x)*plot_numSamples);
       b2 = (int)((X/image_size_x)*plot_numSamples);
-      c1 = (int)((YREF/image_size_y)*plot_nchans);
-      c2 = (int)((Y/image_size_y)*plot_nchans);
+      c2 = (int)((YREF/image_size_y)*plot_nchans);
+      c1 = (int)((Y/image_size_y)*plot_nchans);
+      
+      c1 = plot_nchans-c1;
+      c2 = plot_nchans-c2;
 
       for(i=plot_c1+c1;i<plot_c1+c2;i++)
       {
@@ -648,6 +797,7 @@ int main(int argc, char* argv[])
       
       dedisperse_float(data, f1, f2, nchans, numSamples, (double)(dm-plot_dm), 400.0, (double)tsamp);
       plot_dm = dm;
+      plot_snr = 0.0;
       adjust_spectra(temp, data, weights, flags, mean, plot_c1, plot_c2, plot_b1, plot_b2, plot_numSamples, numSamples, ncrunch, tcrunch);
       plotDynamicSpectra(temp, f1+ foff*plot_c1*ncrunch, f1+ foff*plot_c2*ncrunch, plot_b1, tsamp*tcrunch, plot_numSamples, plot_nchans,mean,std,th);
     }
@@ -708,6 +858,41 @@ int main(int argc, char* argv[])
       plotDynamicSpectra(temp, f1+ foff*plot_c1*ncrunch, f1+ foff*plot_c2*ncrunch, plot_b1, tsamp*tcrunch, plot_numSamples, plot_nchans,mean,std,th);
     }
     
+    if(character == 'o')
+    {
+      cpgband(6,0,0,0,&X,&Y,&character);
+      float t_b1 = (((X-image_origin_x)/image_size_x)*plot_numSamples);
+      b1 = (int)t_b1;
+      plot_tstart = tstart+(((b1*tcrunch)*tsamp)/86400.0);
+      printf("X: %f OX: %f SZ: %f B1: %d tsamp: %1.10f TOA = %5.10lf \n",X,image_origin_x, image_size_x, b1,tsamp,tstart+(((b1*tcrunch)*tsamp)/86400.0));
+      plotDynamicSpectra(temp, f1+ foff*plot_c1*ncrunch, f1+ foff*plot_c2*ncrunch, plot_b1, tsamp*tcrunch, plot_numSamples, plot_nchans,mean,std,th);
+    }
+    
+    if(character == 'y')
+    {
+      cpgband(5,0,0,0,&X,&Y,&character);
+      float t_c1 = (((Y-image_origin_y)/image_size_y)*plot_nchans);
+      c1 = (int)t_c1;
+      c1 = plot_nchans-c1;
+
+      for(i=plot_c1+c1;i<plot_c1+c1+1;i++)
+      {
+        printf("trying now \n");
+        for(j=0;j<numSamples;j++)
+        {
+          for(ii=0;ii<ncrunch;ii++)
+          {
+            for(jj=0;jj<tcrunch;jj++)
+            {
+              flags[(i*ncrunch+ii)*numSamples+j*tcrunch+jj]=1;
+            }
+          }
+        }
+      }
+      adjust_spectra(temp, data, weights, flags, mean, plot_c1, plot_c2, plot_b1, plot_b2, plot_numSamples, numSamples, ncrunch, tcrunch);
+      plotDynamicSpectra(temp, f1+ foff*plot_c1*ncrunch, f1+ foff*plot_c2*ncrunch, plot_b1, tsamp*tcrunch, plot_numSamples, plot_nchans,mean,std,th);
+    }
+
     if(character == 'p')
     {
       float step = 0.001;
