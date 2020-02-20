@@ -16,7 +16,7 @@ extern "C" {
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
-#include <random>
+//#include <random>
 
 //#include "sigproc.h"
 //int read_header(FILE *inputfile) ;
@@ -171,8 +171,8 @@ int main(int argc, char *argv[])
   for(int j =0; j<10; j++){
 
 
-    std::default_random_engine generator;
-    std::normal_distribution<double> dist(mean, stdev);
+    //std::default_random_engine generator;
+    //std::normal_distribution<double> dist(mean, stdev);
     
     double dm_offset = (double)(rand()%400 +1)/400;
     double neg1 = rand()%2;
