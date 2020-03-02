@@ -16,7 +16,8 @@ extern "C" {
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
-//#include <random>
+#include <random>
+#include <cmath>
 
 //#include "sigproc.h"
 //int read_header(FILE *inputfile) ;
@@ -98,6 +99,11 @@ int main(int argc, char *argv[])
   float dm_value=0.0;
   double sample_location=0;
   float toa = 0;
+  double f_max = 800;
+  double f_min = 400;
+
+
+  
   printf("opening file \n");
   fpin = fopen(argv[1],"rb");
   if(fpin==NULL)
@@ -166,24 +172,33 @@ int main(int argc, char *argv[])
   long count=0;
   srand(time(NULL));
   const float mean = 0.0;
-  const float stdev = 0.0005;
-  
+  const float stdev = 0.05;
+  std::default_random_engine generator;
+  std::normal_distribution<double> dist(mean, stdev);
+    
   for(int j =0; j<10; j++){
 
 
-    //std::default_random_engine generator;
-    //std::normal_distribution<double> dist(mean, stdev);
-    
-    double dm_offset = (double)(rand()%400 +1)/400;
-    double neg1 = rand()%2;
-    if (neg1) dm_offset *= -1;
     double jump_offset = (double)(rand()%100)/1000;
     double neg2 = rand()%2;
     if (neg2) jump_offset *= -1;
+
+    double delta_t = (0.128 + jump_offset)*1000;
+    
+    int dm_max = delta_t/(4.15*pow(10, 6)*(1/(f_min*f_min)-1/(f_max*f_max)))*100;
+    //std::cout<<"dm_max = "<<dm_max<<std::endl;
+    //std::cout<<"delta_t = "<<delta_t<<std::endl;
+    //std::cout<<"delta_t/(4.15*pow(10, 6)*(1/(f_min*f_min)-1/(f_max*f_max)))*100 = "<<delta_t/(4.15*pow(10, 6)*(1/(f_min*f_min)-1/(f_max*f_max)))*100<<std::endl;
+    
+    
+    double dm_offset = (double)(rand()%dm_max +1)/100;
+    double neg1 = rand()%2;
+    if (neg1) dm_offset *= -1;
     dm_value = true_dm + dm_offset;
+    std::cout<<"DM = "<<dm_value<<std::endl;
     dmshift(fch1, fch1+(foff*nchans), nchans, dm_value, fch1, tsamp, shift);
     
-    int jump = ((toa - 0.128 + jump_offset)/tsamp)*nchans*sizeof(float);
+    int jump = ((toa - 0.128 /*+ jump_offset*/)/tsamp)*nchans*sizeof(float);
     
     
     sample_location = jump/(nchans*sizeof(float));
@@ -198,9 +213,9 @@ int main(int argc, char *argv[])
     int total_samples = fileSize/(nchans*sizeof(float));
     
     int nread = fread(buffer,sizeof(float),nchans*4096*32,fpin);
-    //for  (int j=0; j<nchans*4096*32; j++){
-    //  buffer[j] += dist(generator);
-    //}
+    for  (int j=0; j<nchans*4096*32; j++){
+      buffer[j] += dist(generator);
+    }
     count += nread/nchans;
     printf("reading file %ld %ld %d\n",sample_location,count,nread/nchans);
     
@@ -213,7 +228,7 @@ int main(int argc, char *argv[])
     
     if(num_samples>64*128) num_samples=64*128;
     
-    for(int smooth=1;smooth<2;smooth=smooth*2) //(int smooth=1;smooth<17;smooth=smooth*2)
+    for(int smooth=1;smooth<17;smooth=smooth*2) //(int smooth=1;smooth<17;smooth=smooth*2)
       {
 	for(int i=0; i<256*256; i++) plot[i]=0;	
 	for(int sample=0;sample<256;sample++)
@@ -224,7 +239,7 @@ int main(int argc, char *argv[])
 		  {
 		    for(int s=0; s<smooth ; s++)
 		      {
-			if(flags[4*channel+c]==0) plot[256*channel+sample] += dataOut[(+smooth*sample+s)*nchans+4*channel+c];
+			if(flags[4*channel+c]==0) plot[256*channel+sample] += dataOut[(smooth*sample+s)*nchans+4*channel+c];
 			else plot[256*channel+sample] += 0.0;
 			
 		      }
@@ -236,7 +251,7 @@ int main(int argc, char *argv[])
 	normalize(plot);
 	
 	char *file_name = new char[200];
-	sprintf(file_name,"nn_sample_%d.plt",start_number+j);
+	sprintf(file_name,"nn_sample_%d_%i_%i_.plt",start_number+j, smooth, j);
 	fpout = fopen(file_name,"wb");
 	
 	float temp= (float)tstart;
