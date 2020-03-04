@@ -160,11 +160,27 @@ def plot_sample(filename,figname):
     plt.rcParams['figure.dpi'] = 300
     x = np.fromfile(filename, dtype='float32')
     mjd = int(x[0])
-    seconds = int(x[1])
+    seconds = x[1] #int(x[1])
     dm = x[2]
     width = int(x[3])
     x = x[7:] 
     x = x.reshape(256,256)
+
+    prof = np.sum(x,axis=0)
+    maxx = np.max(prof)
+    maxi = 0
+    maxprof = 0
+    for i in range(0,255):
+        if (prof[i] > maxprof):
+            maxi = i
+            maxprof = prof[i]
+
+    seconds = seconds + (maxi*width)/1000
+    f = open("TOA.txt", "w+")
+
+    f.write(seconds)
+    f.close()
+
     #fig, ax = plt.subplots(2,1,figsize=(10, 12),sharex=True)
     fig = plt.figure(figsize = (8,10))
     gs1 = gridspec.GridSpec(5, 4)
@@ -204,7 +220,7 @@ testloader = DataLoader(testset, batch_size=200,shuffle=False, num_workers=2)
 
 model = Net()
 #model.load_state_dict(torch.load('/data5/models/best_model.pth'))
-model.load_state_dict(torch.load('/data/repeaters/models/best_model.pth',map_location='cuda:0'))
+model.load_state_dict(torch.load('/data/andrew/best_model.pth',map_location='cuda:0'))
 model.to(device)
 
 model.eval()
