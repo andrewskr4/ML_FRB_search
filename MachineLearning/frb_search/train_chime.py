@@ -14,6 +14,7 @@ from ignite.engine import (
     Events, create_supervised_trainer, create_supervised_evaluator)
 from ignite.metrics import Accuracy, Loss
 from ignite.handlers import ModelCheckpoint
+from ignite.engine import Events, create_supervised_trainer, create_supervised_evaluator
 
 import torch 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -29,7 +30,7 @@ class singlePulseSet(Dataset):
     start: int 
     def __getitem__(self, idx):
         value=self.start+idx
-        filename = str('/data/repeaters/training_data/train_data1_')+str(value)+str('.dat')
+        filename = str('/data/repeaters/andrew_training_prep/1966_FRB_training_data/training_data_')+str(value)+str('.plt')
         x = np.fromfile(filename, dtype='float32')
         y = int(x[6])
         x = x[7:]
@@ -52,15 +53,15 @@ class singlePulseSet(Dataset):
         length of the dataset
         """
         if(self.start==0):
-            l=400000
-        elif (self.start==400000):
-            l=50000
+            l=5000
+        elif (self.start==5000):
+            l=900
         else:
             l=50
         return l
         
 trainset = singlePulseSet(0)
-testset = singlePulseSet(400000)
+testset = singlePulseSet(5000)
 
 
 def get_data_loaders(train_batch_size, val_batch_size):
@@ -139,13 +140,16 @@ def run(train_batch_size, val_batch_size,
                                                      'nll': Loss(nn.CrossEntropyLoss())},
                                             device=device)
     # Setup debug level of engine logger:
-    trainer._logger.setLevel(logging.INFO)
+    #trainer._logger.setLevel(logging.INFO)
+    #changed trainer._logger to trainer.logger AS:Mar2020
+    trainer.logger.setLevel(logging.INFO)
     ch = logging.StreamHandler()
     ch.setLevel(logging.DEBUG)
     formatter = logging.Formatter(
         "%(asctime)s|%(name)s|%(levelname)s| %(message)s")
     ch.setFormatter(formatter)
-    trainer._logger.addHandler(ch)
+    trainer.logger.addHandler(ch)
+    #trainer._logger.addHandler(ch)
 
     @trainer.on(Events.ITERATION_COMPLETED)
     def log_training_loss(engine):
@@ -182,11 +186,17 @@ def run(train_batch_size, val_batch_size,
                 engine.state.epoch, avg_accuracy, avg_nll))
 
     objects_to_checkpoint = {"model": model, "optimizer": optimizer}
+    #engine_checkpoint = ModelCheckpoint(
+    #    dirname="/data/andrew/models/",
+    #    filename_prefix='andrew_first',
+    #    require_empty=False,
+    #    save_interval=10000)
+    #changed above block for the nxt block
+    # save_interval was apparently out of date AS:Mar2020
     engine_checkpoint = ModelCheckpoint(
-        dirname="/data/repeaters/models/",
-        filename_prefix='sixth',
-        require_empty=False,
-        save_interval=10000)
+        dirname="/data/andrew/models/",
+        filename_prefix='1966_FRB_model',
+        require_empty=False)
     trainer.add_event_handler(
         Events.ITERATION_COMPLETED, engine_checkpoint, objects_to_checkpoint)
 

@@ -208,8 +208,6 @@ int main(int argc, char *argv[])
     for(int i=0; i<nchans*256*7; i++) smooth_data[i] = 0.0;
 
 		for(int i=0;i<40960;i++)
-		{
-		  for(int j=0; j<nchans; j++)
 			{
 			  avg_data[i*nchans+j] = (float)(int)dataOut[3*i*nchans+j] + (float)(int)dataOut[(3*i+1)*nchans+j] + (float)(int)dataOut[(3*i+2)*nchans+j];
 			}
@@ -225,7 +223,7 @@ int main(int argc, char *argv[])
 			
 			  for(int sample=0;sample<256;sample++)
 		    {   	
-		      for(int channel=0;channel<256;channel++)
+		      for(int channel=1;channel<256;channel++)
 			    {
 			      for(int c=0; c<4; c++)
 				    {

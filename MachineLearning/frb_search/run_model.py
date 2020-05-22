@@ -170,16 +170,20 @@ def plot_sample(filename,figname):
     maxx = np.max(prof)
     maxi = 0
     maxprof = 0
-    for i in range(0,255):
-        if (prof[i] > maxprof):
-            maxi = i
-            maxprof = prof[i]
+    ############################### Uncomment below to print accurate TOA
+    ############################### Leave commented to print start of plot time
+    #for i in range(0,255):
+    #    if (prof[i] > maxprof):
+    #        maxi = i
+    #        maxprof = prof[i]
 
-    seconds = seconds + (maxi*width)/1000
-    f = open("TOA.txt", "w+")
+    #seconds = seconds + (maxi*width)/1000
+    #f = open("TOA.txt", "w+")
 
-    f.write(seconds)
-    f.close()
+    #f.write(str(seconds))
+    #f.close()
+
+    print(str(seconds))
 
     #fig, ax = plt.subplots(2,1,figsize=(10, 12),sharex=True)
     fig = plt.figure(figsize = (8,10))
@@ -219,8 +223,10 @@ testloader = DataLoader(testset, batch_size=200,shuffle=False, num_workers=2)
 
 
 model = Net()
-#model.load_state_dict(torch.load('/data5/models/best_model.pth'))
-model.load_state_dict(torch.load('/data/andrew/best_model.pth',map_location='cuda:0'))
+#model.load_state_dict(torch.load('/data/andrew/saved_models/best_model.pth'))
+model.load_state_dict(torch.load('/data/andrew/saved_models/aruns_data_trained_checkpoint_112500.pth', map_location='cuda:0')['model'])
+#model.load_state_dict(torch.load('/data/andrew/models/first_model.pth',map_location='cuda:0')['model'])
+#model.load_state_dict(torch.load('/data/andrew/combined_model.pth',map_location='cuda:0')['model'])
 model.to(device)
 
 model.eval()
