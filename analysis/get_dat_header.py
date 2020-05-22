@@ -13,14 +13,20 @@ def get_dat_header(filename):
     fnameComp = filename.split(".")
     pngName = fnameComp[0] + '.png'
     width = int(x[3])
+<<<<<<< HEAD
     tag = int(x[6])
+=======
+>>>>>>> d4a809dcdbb1df453be43047e3d451c166aa0357
 
     print("File: "+filename)
     print("DM: "+str(dm))
     print("MJD: "+str(mjd))
     print("Start of Sample (s): "+str(seconds))
     print("Width: "+str(width))
+<<<<<<< HEAD
     print("Tag: "+str(tag))
+=======
+>>>>>>> d4a809dcdbb1df453be43047e3d451c166aa0357
 
 
 
