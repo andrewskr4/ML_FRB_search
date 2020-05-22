@@ -101,10 +101,7 @@ int main(int argc, char *argv[])
   float toa = 0;
   double f_max = 800;
   double f_min = 400;
-<<<<<<< HEAD
   int evNum = 0;
-=======
->>>>>>> d4a809dcdbb1df453be43047e3d451c166aa0357
 
 
   
@@ -144,7 +141,6 @@ int main(int argc, char *argv[])
     {
       i++;
       toa= atof(argv[i]);
-<<<<<<< HEAD
       //std::cout<<"toa "<<toa<<std::endl;
     }
     if(strcmp(argv[i],"-ev")==0)
@@ -152,9 +148,6 @@ int main(int argc, char *argv[])
       i++;
       evNum= atoi(argv[i]);
       //std::cout<<"toa "<<toa<<std::endl;
-=======
-      std::cout<<"toa "<<toa<<std::endl;
->>>>>>> d4a809dcdbb1df453be43047e3d451c166aa0357
     }
 
   }
@@ -186,20 +179,11 @@ int main(int argc, char *argv[])
   long count=0;
   srand(time(NULL));
   const float mean = 0.0;
-<<<<<<< HEAD
   const float stdev = 0.001;//changed from 0.01 to 0.001 May 21, 2020 AS
   std::default_random_engine generator;
   std::normal_distribution<double> dist(mean, stdev);
     
   for(int j =0; j<3; j++){
-=======
-  const float stdev = 0.05;
-  std::default_random_engine generator;
-  std::normal_distribution<double> dist(mean, stdev);
-    
-  for(int j =0; j<10; j++){
->>>>>>> d4a809dcdbb1df453be43047e3d451c166aa0357
-
 
     double jump_offset = (double)(rand()%100)/1000;
     double neg2 = rand()%2;
@@ -220,11 +204,7 @@ int main(int argc, char *argv[])
     std::cout<<"DM = "<<dm_value<<std::endl;
     dmshift(fch1, fch1+(foff*nchans), nchans, dm_value, fch1, tsamp, shift);
     
-<<<<<<< HEAD
     int jump = ((toa - 0.128 + jump_offset)/tsamp)*nchans*sizeof(float);
-=======
-    int jump = ((toa - 0.128 /*+ jump_offset*/)/tsamp)*nchans*sizeof(float);
->>>>>>> d4a809dcdbb1df453be43047e3d451c166aa0357
     
     
     sample_location = jump/(nchans*sizeof(float));
@@ -277,11 +257,7 @@ int main(int argc, char *argv[])
 	normalize(plot);
 	
 	char *file_name = new char[200];
-<<<<<<< HEAD
 	sprintf(file_name,"%i_sample_%d_%i_%i_.plt",evNum, start_number+j, smooth, j);
-=======
-	sprintf(file_name,"nn_sample_%d_%i_%i_.plt",start_number+j, smooth, j);
->>>>>>> d4a809dcdbb1df453be43047e3d451c166aa0357
 	fpout = fopen(file_name,"wb");
 	
 	float temp= (float)tstart;
@@ -296,13 +272,8 @@ int main(int argc, char *argv[])
 	fwrite(&temp,sizeof(float),1,fpout);
 	temp = dm_value;
 	fwrite(&temp,sizeof(float),1,fpout);
-<<<<<<< HEAD
 	temp = 1.0;//1 for frb 0 for rfi
 	fwrite(&temp,sizeof(float),1,fpout);//flag for frb or rfi
-=======
-	temp = 0.0;
-	fwrite(&temp,sizeof(float),1,fpout);
->>>>>>> d4a809dcdbb1df453be43047e3d451c166aa0357
 	fwrite(plot,sizeof(float),256*256,fpout);
 	fclose(fpout);
 	free(file_name);
