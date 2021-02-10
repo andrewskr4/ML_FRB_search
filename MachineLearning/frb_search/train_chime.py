@@ -30,7 +30,7 @@ class singlePulseSet(Dataset):
     start: int 
     def __getitem__(self, idx):
         value=self.start+idx
-        filename = str('/data/repeaters/andrew_training_prep/1966_FRB_training_data/training_data_')+str(value)+str('.plt')
+        filename = str('/data/repeaters/andrew_training_prep/july20training/training_data_')+str(value)+str('.plt')
         x = np.fromfile(filename, dtype='float32')
         y = int(x[6])
         x = x[7:]
@@ -53,15 +53,15 @@ class singlePulseSet(Dataset):
         length of the dataset
         """
         if(self.start==0):
-            l=5000
-        elif (self.start==5000):
-            l=900
+            l=85600
+        elif (self.start==85600):
+            l=6000
         else:
             l=50
         return l
         
 trainset = singlePulseSet(0)
-testset = singlePulseSet(5000)
+testset = singlePulseSet(85600)
 
 
 def get_data_loaders(train_batch_size, val_batch_size):
@@ -195,7 +195,7 @@ def run(train_batch_size, val_batch_size,
     # save_interval was apparently out of date AS:Mar2020
     engine_checkpoint = ModelCheckpoint(
         dirname="/data/andrew/models/",
-        filename_prefix='1966_FRB_model',
+        filename_prefix='July20_model_v2',
         require_empty=False)
     trainer.add_event_handler(
         Events.ITERATION_COMPLETED, engine_checkpoint, objects_to_checkpoint)

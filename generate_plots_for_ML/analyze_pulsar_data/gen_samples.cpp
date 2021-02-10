@@ -209,7 +209,9 @@ int main(int argc, char *argv[])
 
 		for(int i=0;i<40960;i++)
 			{
-			  avg_data[i*nchans+j] = (float)(int)dataOut[3*i*nchans+j] + (float)(int)dataOut[(3*i+1)*nchans+j] + (float)(int)dataOut[(3*i+2)*nchans+j];
+			for (int j=0; j<nchans; j++)
+			{	
+			    avg_data[i*nchans+j] = (float)(int)dataOut[3*i*nchans+j] + (float)(int)dataOut[(3*i+1)*nchans+j] + (float)(int)dataOut[(3*i+2)*nchans+j];
 			}
 		}
     

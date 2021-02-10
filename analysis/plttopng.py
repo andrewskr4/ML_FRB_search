@@ -9,23 +9,14 @@ import matplotlib.gridspec as gridspec
 num_cores = mp.cpu_count()
 
 f = glob.glob('*.plt')
-<<<<<<< HEAD
 g = glob.glob('*.fil')
-=======
->>>>>>> d4a809dcdbb1df453be43047e3d451c166aa0357
 
 def plot(i):
     plt.rcParams['figure.dpi'] = 300
     filename = f[i]
     fname = filename.split('.')
-<<<<<<< HEAD
     fname2 = g[0].split("_")
     figname = str(fname[0])
-
-=======
-    figname = str(fname[0]) + str('TEST')
-    
->>>>>>> d4a809dcdbb1df453be43047e3d451c166aa0357
     x = np.fromfile(filename, dtype='float32')
     mjd = x[0]
     seconds = x[1]
@@ -38,22 +29,16 @@ def plot(i):
     maxx = np.max(prof)
     maxi = 0
     maxprof = 0
-<<<<<<< HEAD
     #print(seconds)
-=======
-    print(seconds)
->>>>>>> d4a809dcdbb1df453be43047e3d451c166aa0357
+
     for i in range(0,255):
         if (prof[i] > maxprof):
             maxi = i
             maxprof = prof[i]
     
     seconds = seconds + (maxi*width)/1000
-<<<<<<< HEAD
     #print(seconds)
-=======
-    print(seconds)
->>>>>>> d4a809dcdbb1df453be43047e3d451c166aa0357
+
     days = seconds/(3600*24)
     mjdtoa = mjd + days
     time = Time(mjdtoa, format='mjd')
