@@ -3,6 +3,7 @@ import torchvision
 import torchvision.transforms as transforms
 import sys
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+#device = torch.device("cpu")
 import matplotlib.gridspec as gridspec
 
 from dataclasses import dataclass
@@ -224,9 +225,15 @@ testloader = DataLoader(testset, batch_size=200,shuffle=False, num_workers=2)
 
 model = Net()
 #model.load_state_dict(torch.load('/data/andrew/saved_models/best_model.pth'))
-model.load_state_dict(torch.load('/data/andrew/saved_models/aruns_data_trained_checkpoint_112500.pth', map_location='cuda:0')['model'])
+#model.load_state_dict(torch.load('/data/andrew/saved_models/aruns_data_trained_checkpoint_112500.pth', map_location='cuda:0')['model'])
 #model.load_state_dict(torch.load('/data/andrew/models/first_model.pth',map_location='cuda:0')['model'])
 #model.load_state_dict(torch.load('/data/andrew/combined_model.pth',map_location='cuda:0')['model'])
+#model.load_state_dict(torch.load('/data/andrew/saved_models/June1_model_checkpoint_2250.pth', map_location='cuda:0')['model'])
+#model.load_state_dict(torch.load('/data/andrew/models/July20_model_v2_checkpoint_21400.pth', map_location='cuda:0')['model'])
+#model.load_state_dict(torch.load('/data/andrew/models/sept29_model_checkpoint_22250.pth', map_location='cuda:0')['model'])
+
+model.load_state_dict(torch.load('/data/andrew/saved_models/oct12_model_checkpoint_102500.pth', map_location='cuda:0')['model'])
+#model.load_state_dict(torch.load('/home/andrew/pytorch_practice/simple_pytorch_code_model_v2.pth'))
 model.to(device)
 
 model.eval()

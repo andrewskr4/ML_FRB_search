@@ -179,11 +179,11 @@ int main(int argc, char *argv[])
   long count=0;
   srand(time(NULL));
   const float mean = 0.0;
-  const float stdev = 0.001;//changed from 0.01 to 0.001 May 21, 2020 AS
+  const float stdev = 0.0001;//changed from 0.001 to 0.0001 Oct 4, 2020 AS
   std::default_random_engine generator;
   std::normal_distribution<double> dist(mean, stdev);
     
-  for(int j =0; j<3; j++){
+  for(int j =0; j<100; j++){
 
     double jump_offset = (double)(rand()%100)/1000;
     double neg2 = rand()%2;
@@ -219,8 +219,8 @@ int main(int argc, char *argv[])
     int total_samples = fileSize/(nchans*sizeof(float));
     
     int nread = fread(buffer,sizeof(float),nchans*4096*32,fpin);
-    for  (int j=0; j<nchans*4096*32; j++){
-      buffer[j] += dist(generator);
+    for  (int k=0; k<nchans*4096*32; k++){
+      buffer[k] += dist(generator);
     }
     count += nread/nchans;
     printf("reading file %ld %ld %d\n",sample_location,count,nread/nchans);
