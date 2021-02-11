@@ -183,7 +183,11 @@ int main(int argc, char *argv[])
   std::default_random_engine generator;
   std::normal_distribution<double> dist(mean, stdev);
     
+<<<<<<< HEAD
   for(int j =0; j<100; j++){
+=======
+  for(int j =0; j<150; j++){
+>>>>>>> dfb624cf32fd09605971a5e459d3e001140e3056
 
     double jump_offset = (double)(rand()%100)/1000;
     double neg2 = rand()%2;

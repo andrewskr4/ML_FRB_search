@@ -21,6 +21,7 @@ def plot_sample(filename,figname):
     prof = np.sum(x,axis=0)
 
     ####Uncomment the folling lines if TOA is desired
+<<<<<<< HEAD
     seconds = "???"
     trueTOA = "???"
     #maxx = np.max(prof)
@@ -33,6 +34,20 @@ def plot_sample(filename,figname):
     #        maxprof = prof[i]
     
     #seconds = seconds + (maxi*width)/1000
+=======
+    #seconds = "???"
+    #trueTOA = "???"
+    maxx = np.max(prof)
+    maxi = 0
+    maxprof = 0
+    
+    for i in range(0,255):
+        if (prof[i] > maxprof):
+            maxi = i
+            maxprof = prof[i]
+    
+    seconds = seconds + (maxi*width)/1000
+>>>>>>> dfb624cf32fd09605971a5e459d3e001140e3056
 
 
     #f = open("Location.txt", "w+")
@@ -40,10 +55,17 @@ def plot_sample(filename,figname):
     #f.write(str(seconds))
     #f.close()
     
+<<<<<<< HEAD
     #days = seconds/(3600*24)
     #mjdtoa = mjd + days
     #time = Time(mjdtoa, format='mjd')
     #trueTOA = time.iso
+=======
+    days = seconds/(3600*24)
+    mjdtoa = mjd + days
+    time = Time(mjdtoa, format='mjd')
+    trueTOA = time.iso
+>>>>>>> dfb624cf32fd09605971a5e459d3e001140e3056
     #################################################
  
     fig = plt.figure(figsize = (8,10))
