@@ -255,9 +255,11 @@ with torch.no_grad():
     for data in testloader:
         images, labels = data[0].to(device),data[1].to(device)
         outputs = model(images.to(device))
-        _, predicted = torch.max(outputs.data, 1)
+        print(outputs)
+        outputs, predicted = torch.max(outputs.data, 1)
         for i in np.arange(200):
             if predicted[i]!=labels[i]:
+                #print(outputs)
                 x = images[i][0]
                 im = plt.imshow(x.cpu().numpy())
                 plt.title(str('sample= ')+str(batch*200+i))
