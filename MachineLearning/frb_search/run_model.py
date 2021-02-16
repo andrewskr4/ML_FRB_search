@@ -227,7 +227,7 @@ model = Net()
 #model.load_state_dict(torch.load('/data/andrew/saved_models/best_model.pth'))
 #model.load_state_dict(torch.load('/data/andrew/saved_models/aruns_data_trained_checkpoint_112500.pth', map_location='cuda:0')['model'])
 #model.load_state_dict(torch.load('/data/andrew/models/first_model.pth',map_location='cuda:0')['model'])
-model.load_state_dict(torch.load('/home/asikora/scratch/July20_model_v2_checkpoint_21400.pth', map_location=torch.device('cpu'))['model'])
+#model.load_state_dict(torch.load('/home/asikora/scratch/July20_model_v2_checkpoint_21400.pth', map_location=torch.device('cpu'))['model'])
 #model.load_state_dict(torch.load('/data/andrew/combined_model.pth',map_location='cuda:0')['model'])
 #model.load_state_dict(torch.load('/data/andrew/saved_models/June1_model_checkpoint_2250.pth', map_location='cuda:0')['model'])
 #model.load_state_dict(torch.load('/home/asikora/oct12_model_checkpoint_102500.pth', map_location=torch.device('cpu'))['model'])
@@ -249,9 +249,11 @@ with torch.no_grad():
     for data in testloader:
         images, labels = data[0].to(device),data[1].to(device)
         outputs = model(images.to(device))
-        _, predicted = torch.max(outputs.data, 1)
+        print(outputs)
+        outputs, predicted = torch.max(outputs.data, 1)
         for i in np.arange(200):
             if predicted[i]!=labels[i]:
+                #print(outputs)
                 x = images[i][0]
                 im = plt.imshow(x.cpu().numpy())
                 plt.title(str('sample= ')+str(batch*200+i))
