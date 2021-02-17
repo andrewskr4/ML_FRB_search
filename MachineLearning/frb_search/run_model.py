@@ -158,7 +158,7 @@ class Net(nn.Module):
        return out             
        
 
-def plot_sample(filename,figname):
+def plot_sample(filename,figname,output):
     plt.rcParams['figure.dpi'] = 300
     x = np.fromfile(filename, dtype='float32')
     mjd = int(x[0])
@@ -210,7 +210,7 @@ def plot_sample(filename,figname):
     
     prof = np.sum(x,axis=0)
     ax2.plot(prof)
-    ax1.set_title(str('MJD: ')+str(int(mjd))+str('   location= ')+str(seconds)+str('s    width=')+str(width),fontsize=8)
+    ax1.set_title(str('MJD: ')+str(int(mjd))+str('   location= ')+str(seconds)+str('s    width=')+str(width)+str('score: ')+str(output),fontsize=8)
     plt.savefig(figname,bbox_inches='tight', transparent=True,pad_inches=0)
     plt.close(fig)
 
@@ -237,7 +237,7 @@ model = Net()
 #model.load_state_dict(torch.load('/data/andrew/saved_models/oct12_model_checkpoint_102500.pth', map_location='cuda:0')['model'])
 #model.load_state_dict(torch.load('/home/andrew/pytorch_practice/simple_pytorch_code_model_v2.pth'))
 #model.load_state_dict(torch.load('/home/asikora/oct12_model_checkpoint_102500.pth', map_location=torch.device('cpu'))['model'])
-model.load_state_dict(torch.load('/home/asikora/simple_pytorch_code_model_v2.pth',map_location=torch.device('cpu')))
+model.load_state_dict(torch.load('/data/andrew/saved_models/simple_pytorch_code_model_v2.pth',map_location=torch.device('cpu')))
 model.to(device)
 
 model.eval()
@@ -249,25 +249,28 @@ total = 0
 batch=0
 sample=0
 
+
 num_samples = np.size(glob.glob(str(sys.argv[1])+str('/sample_')+str('*')+str('.plt')))
 
 with torch.no_grad():
     for data in testloader:
         images, labels = data[0].to(device),data[1].to(device)
         outputs = model(images.to(device))
-        print(outputs)
+        old_outputs = outputs
         outputs, predicted = torch.max(outputs.data, 1)
         for i in np.arange(200):
             if predicted[i]!=labels[i]:
-                #print(outputs)
+                #print(i, old_outputs)
+                #print(str(outputs[i])+"  "+str( predicted[i])+"  "+str( labels[i]))
+                #print(old_outputs)
                 x = images[i][0]
                 im = plt.imshow(x.cpu().numpy())
                 plt.title(str('sample= ')+str(batch*200+i))
                 filename = str(sys.argv[1])+str('/sample_')+str(batch*200+i)+str('.plt')
                 figname = str(sys.argv[1])+str('/')+str(sys.argv[2])+str('_')+str(sys.argv[3])+str('_sample_')+str(batch*200+i)+str('.png')
                 outfile = str(sys.argv[1])+str('/')+str(sys.argv[2])+str('_')+str(sys.argv[3])+str('_sample_')+str(batch*200+i)+str('.dat')
-                command = str('mv ')+str(filename)+str(' ')+str(outfile)
-                plot_sample(filename,figname)
+                command = str('cp ')+str(filename)+str(' ')+str(outfile)
+                plot_sample(filename,figname,outputs[i])
                 os.system(command)
                 #plt.savefig(str(sys.argv[1])+str('/sample1_')+str(batch*200+i)+str('.png'),bbox_inches='tight', transparent=True,pad_inches=0)
 								#plt.imsave(str(sys.argv[1])+str('/sample_')+str(batch*200+i)+str('.png'),x.cpu().numpy())
